@@ -1,3 +1,5 @@
+import { createRequireFromPath } from "module";
+
 //Make Connection
 var socket = io.connect('http://localhost:4000');
 
@@ -6,8 +8,49 @@ var message = document.getElementById('message');
 var submit = document.getElementById('encrypt');
 
 //Prime Number Finder
-function prime() {
+function primeTest(n, k) {
+	if (n % 2 === 0) {
+		return false;
+	}
+	
+	var d = 1;
+    var temp = n - 1;
+    var r = 0;
+    do {
+        temp = temp / 2;
+        r++;
+    } while (Number.isInteger(temp));
+    r--;
+    
+    while (n - 1 !== d * Math.pow(2, r)) {
+		d++;
+	}
 
+	for (; k >= 0; k--) {
+		if (!millerRabin(n, d)) {
+			return false;
+		}
+	}
+	return true;
+}
+
+
+//Miller-Rabin test, which determines if a number is composit or not.
+function millerRabin(n, d) {
+	var a = Math.ceil((n - 3) * Math.random()) + 1;
+	var testRes = Math.pow(a, d) % n;
+	if (testRes === 1 || testRes === (n - 1)) {
+		return true;
+	}
+	
+	while (true) {
+		testRes = Math.pow(testRes, 2) % n;
+		if (testRes === 1) {
+			return false;
+		} else if (testRes === n - 1) {
+			return true;
+		}
+	}
 }
 
 //User input
