@@ -8,9 +8,21 @@
     </head>
     <body>
         <h1>RSA Encryptor</h1>
-        <div id="encryptor-div">
-            <input id="message" type="text" placeholder="Type your message here!" />
+        <div class='big-div' id="encryptor-div">
+            <p><br></p>
+            <input id="message" type="text" placeholder="Plaintext" />
+            <p><br></p>
             <button id="encrypt">Encrypt</button>
+            <div id="postEncryption"></div>
+            <script src="/Encrypt.js"></script>
+        </div>
+        <h1>RSA Decryptor</h1>
+        <div class='big-div' id="encryptor-div">
+            <p><br></p>
+            <input id="cypher-message" type="text" placeholder="Cyphertext" />
+            <p><br></p>
+            <button id="decrypt">Decrypt</button>
+            <div id="postDecryption"></div>
             <script src="/Encrypt.js"></script>
         </div>
     </body>

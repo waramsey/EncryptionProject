@@ -1,3 +1,44 @@
-encryptor-div
-message 
-encrypt
+
+/* Color Scheme:
+    #000000
+    #36494E
+    #57737A
+    #C4E7EF
+    #FFFBFE
+*/
+
+body {
+    background-color: #C4E7EF;
+}
+
+h1 {
+    text-align: center;
+}
+
+.big-div {
+    margin-left: auto;
+    margin-right: auto;
+    width: 500px;
+    height: 500px;
+    border-radius: 5px;
+    background-color: #57737A;
+    text-align: center;
+}
+
+input {
+    padding: 10px 20px;
+    box-sizing: border-box;
+    border: 0;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+    width: 90%;
+    background: #FFFBFE;
+    font-family: Nunito;
+    font-size: 16px;
+    border-radius: 10px;
+}
+
+button {
+    background-color: #FFFBFE;
+}
