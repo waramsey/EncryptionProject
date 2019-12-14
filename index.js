@@ -21,4 +21,7 @@ io.on('connection', function(socket){
     socket.on('encryptor-div', function(data){
         io.sockets.emit('encryptor-div', data); //sockets refers to ALL connected sockets
     });
+    socket.on('decryptor-div', function(data){
+        io.sockets.emit('decryptor-div', data);
+    });
 });

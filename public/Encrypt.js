@@ -6,6 +6,8 @@ var message = document.getElementById('message');
 var submit = document.getElementById('encrypt');
 var postEncryption = document.getElementById('postEncryption');
 var cypherMessage = document.getElementById('cypher-message');
+var decrypt = document.getElementById('decrypt');
+var postDecryption = document.getElementById('postDecryption');
 
 //Keys
 var pubKey;
@@ -18,12 +20,21 @@ submit.addEventListener('click', function(){
         message: message.value
     });
 });
+decrypt.addEventListener('click', function(){
+    socket.emit('decryptor-div', {
+        cypherMessage: cypherMessage.value
+    });
+});
 
 //when user clicks on encrypt, encrypts the message
 socket.on('encryptor-div', function(data){
     postEncryption.innerHTML += '<p>' + encryptInput(data.message) + '</p>';
     cypherMessage.value = encryptInput(data.message);
-    //postEncryption.innerHTML += '<p>' + data.message + '</p>';
+    // postEncryption.innerHTML += '<p>' + data.message + '</p>';
+    // cypherMessage.value = data.message;
+});
+socket.on('decryptor-div', function(data){
+    postDecryption.innerHTML += '<p>' + decryptInput(data.cypherMessage) + '</p>';
 });
 
 
@@ -45,10 +56,6 @@ function encryptInput(userInput) {
         cypherText += m.toString();
     }
 
-    var m = Math.pow(userInput, publicExponent);
-    m %= publicKey;
-    cypherText += m.toString();
-
     return cypherText;
 }
 
@@ -65,12 +72,12 @@ function genKey() {
     var n = a * b; //1st part of both keys
 
     var phi = (a - 1) * (b - 1);
-    var exp = 2; //2nd part of PUBLIC key
+    var exp = 3; //2nd part of PUBLIC key
     while (exp < phi) {
         if(gcd(exp, phi) == 1) {
             break;
         }
-        exp++;
+        exp += 2;
     }
 
     //phi is already phi of n
@@ -159,3 +166,23 @@ function gcd(a, b) {
 // 		}
 // 	}
 // }
+
+
+//For decrypting the user input
+function decryptInput(cypherText) {
+    var decryptedText = '';
+
+    var publicKey = privKey[0];
+    var privateKey = privKey[1];
+
+
+    for (var i = 0; i < cypherText.length; i++) {
+        //decrypt character
+        var m = Math.pow(cypherText.charCodeAt(i), privateKey);
+
+        m %= publicKey;
+        decryptedText += m.toString();
+    }
+
+    return decryptedText;
+}
