@@ -28,10 +28,10 @@ decrypt.addEventListener('click', function(){
 
 //when user clicks on encrypt, encrypts the message
 socket.on('encryptor-div', function(data){
-    postEncryption.innerHTML += '<p>' + encryptInput(data.message) + '</p>';
-    cypherMessage.value = encryptInput(data.message);
-    // postEncryption.innerHTML += '<p>' + data.message + '</p>';
-    // cypherMessage.value = data.message;
+    genKey();
+    var encrypted = encryptInput(data.message);
+    postEncryption.innerHTML += '<p>' + encrypted + '</p>';
+    cypherMessage.value = encrypted;
 });
 socket.on('decryptor-div', function(data){
     postDecryption.innerHTML += '<p>' + decryptInput(data.cypherMessage) + '</p>';
@@ -41,8 +41,6 @@ socket.on('decryptor-div', function(data){
 //Encrypt input (add generated key to plaintext characters, acceptable range is 32 - 126)
 //Dr Ricks thinks it is encrypted in chunks, continue research
 function encryptInput(userInput) {
-    genKey();
-
     var publicKey = pubKey[0];
     var publicExponent = pubKey[1];
 
@@ -53,26 +51,27 @@ function encryptInput(userInput) {
         var m = Math.pow(userInput.charCodeAt(i), publicExponent);
 
         m %= publicKey;
-        cypherText += m.toString();
+        cypherText += String.fromCharCode(m % 128); //should be converting into a character
     }
 
     return cypherText;
 }
 
 
-//Generate Key: a public key is made up of 
-//"n" (two prime numbers, 1024 digits each) 
-//and "exp" (the public exponent)
+//Generate Private and Public Keys
 function genKey() {
-    console.log('randlargeprime a');
+    //generate 2 random primes
     var a = randLargePrime();
-    console.log('randlargeprime b');
     var b = randLargePrime();
 
-    var n = a * b; //1st part of both keys
+    //multiply primes to get n, the public key
+    var n = a * b;
 
+    //calculate phi(n)
     var phi = (a - 1) * (b - 1);
-    var exp = 3; //2nd part of PUBLIC key
+
+    //calculate public exponent
+    var exp = 3;
     while (exp < phi) {
         if(gcd(exp, phi) == 1) {
             break;
@@ -80,13 +79,15 @@ function genKey() {
         exp += 2;
     }
 
-    //phi is already phi of n
-    //(d * exp) % phi = 1
+    //calculate private key (d)
     var d = 0;
+    var count = 1;
     do {
-        d++;
-    } while ((d * exp) % phi !== 1);
+        d = (count * phi + 1) / exp;
+        count++;
+    } while (!Number.isInteger(d));
 
+    //store keys and public exponent
     pubKey = [n, exp];
     privKey = [n, d];
 }
@@ -95,7 +96,6 @@ function genKey() {
 //generates a prime 1024 digits long.  Had to reduce the size of the prime so javascript wouldn't call it 'infinity.'
 function randLargePrime() {
     var guess = 0;
-    var value = 0;
     console.log('entered randlargeprime loop');
 
     do {
@@ -103,7 +103,7 @@ function randLargePrime() {
     } while (!primeTest(guess, 5)); //the '20' is how many times we want to run the miller-rabin test.
     console.log('escaped randlargeprime loop');
 
-    return value;
+    return guess;
 }
 
 
@@ -115,25 +115,18 @@ function primeTest(n, k) {
     console.log('primetest 1');
 
     //We use the Fermat Primality Test to determine primality
-    for (; k >= 0; k--) {
-        var a = k;
-    
+    for (; k > 0; k--) {
+        var a = Math.ceil(Math.random() * (n - 1));
+
         if (gcd(a, n) !== 1) {
             return false;
-        } else {
-            var power = a;
-            for (var i = n - 1; i > 0; i--) {
-                power *= a;
-            }
-            if (power % n !== 1) {
-                return false;
-            }
+        } else if (modulo(a, (n - 1), n) !== 1) {
+            return false;
         }
     }
 
 	return true;
 }
-
 
 //Greatest Common Denominator
 function gcd(a, b) {
@@ -145,6 +138,16 @@ function gcd(a, b) {
     return gcd(b, a % b);
 }
 
+//calculates a^b % c, adapted for javascript from the method presented at:
+//https://www.topcoder.com/community/competitive-programming/tutorials/primality-testing-non-deterministic-algorithms/
+function modulo(a, b, c) {
+    var temp = 1;
+    for (var i = 0; i < b; i++) {
+        temp *= a;
+        temp %= c;
+    }
+    return temp % c;
+}
 
 //Miller-Rabin test, which determines if a number is composit or not.
 // function millerRabin(n, d) {
@@ -181,7 +184,7 @@ function decryptInput(cypherText) {
         var m = Math.pow(cypherText.charCodeAt(i), privateKey);
 
         m %= publicKey;
-        decryptedText += m.toString();
+        decryptedText += String.fromCharCode(m % 128);
     }
 
     return decryptedText;
