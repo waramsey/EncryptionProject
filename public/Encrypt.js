@@ -48,21 +48,23 @@ function encryptInput(userInput) {
 
     for (var i = 0; i < userInput.length; i++) {
         //encrypt character
-        var m = Math.pow(userInput.charCodeAt(i), publicExponent);
-
-        m %= publicKey;
-        cypherText += String.fromCharCode(m % 128); //should be converting into a character
+        var m = modulo(userInput.charCodeAt(i), publicExponent, publicKey);
+        cypherText += m + " ";
     }
 
     return cypherText;
-}
+} //restrict cyphering into a range of valid chars 33-126
 
 
 //Generate Private and Public Keys
 function genKey() {
     //generate 2 random primes
     var a = randLargePrime();
-    var b = randLargePrime();
+    var b;
+    do {
+        b = randLargePrime();
+    } while (a === b);
+
 
     //multiply primes to get n, the public key
     var n = a * b;
@@ -96,12 +98,10 @@ function genKey() {
 //generates a prime 1024 digits long.  Had to reduce the size of the prime so javascript wouldn't call it 'infinity.'
 function randLargePrime() {
     var guess = 0;
-    console.log('entered randlargeprime loop');
 
     do {
         guess = Math.pow(10, 1) + Math.floor(Math.random() * 9 * Math.pow(10, 1));
-    } while (!primeTest(guess, 5)); //the '20' is how many times we want to run the miller-rabin test.
-    console.log('escaped randlargeprime loop');
+    } while (!primeTest(guess, 40)); //the '40' is how many times we want to run the miller-rabin test.
 
     return guess;
 }
@@ -112,7 +112,6 @@ function primeTest(n, k) {
 	if (n % 2 === 0) {
 		return false;
 	}
-    console.log('primetest 1');
 
     //We use the Fermat Primality Test to determine primality
     for (; k > 0; k--) {
@@ -128,18 +127,21 @@ function primeTest(n, k) {
 	return true;
 }
 
+
 //Greatest Common Denominator
 function gcd(a, b) {
     if (b == 0) {
         return a;
     }
-    console.log('found gcd');
 
     return gcd(b, a % b);
 }
 
+
 //calculates a^b % c, adapted for javascript from the method presented at:
 //https://www.topcoder.com/community/competitive-programming/tutorials/primality-testing-non-deterministic-algorithms/
+//This is called modular exponentiation, and it's purpose is to perform
+//the calculation without producing a number so large it would cause issues.
 function modulo(a, b, c) {
     var temp = 1;
     for (var i = 0; i < b; i++) {
@@ -149,42 +151,23 @@ function modulo(a, b, c) {
     return temp % c;
 }
 
-//Miller-Rabin test, which determines if a number is composit or not.
-// function millerRabin(n, d) {
-//     console.log('entered miller rabin');
 
-// 	var a = Math.ceil((n - 3) * Math.random()) + 1;
-// 	var testRes = Math.pow(a, d) % n; //This number is too darn big
-// 	if (testRes === 1 || testRes === (n - 1)) {
-// 		return true;
-// 	}
-//     console.log('miller rabin pt 2');
-
-// 	while (true) {
-// 		testRes = Math.pow(testRes, 2) % n;
-// 		if (testRes === 1) {
-// 			return false;
-// 		} else if (testRes === n - 1) {
-// 			return true;
-// 		}
-// 	}
-// }
-
-
-//For decrypting the user input
+//For decrypting cyphertext
 function decryptInput(cypherText) {
     var decryptedText = '';
 
     var publicKey = privKey[0];
     var privateKey = privKey[1];
-
+    var letter = "";
 
     for (var i = 0; i < cypherText.length; i++) {
-        //decrypt character
-        var m = Math.pow(cypherText.charCodeAt(i), privateKey);
-
-        m %= publicKey;
-        decryptedText += String.fromCharCode(m % 128);
+        if (cypherText[i] >= '0' && cypherText[i] <= '9') {
+            letter += cypherText[i];
+        } else {
+            var m = modulo(parseInt(letter, 10), privateKey, publicKey);
+            decryptedText += String.fromCharCode(m % 128);
+            letter = "";
+        }
     }
 
     return decryptedText;
