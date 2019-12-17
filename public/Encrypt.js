@@ -30,11 +30,11 @@ decrypt.addEventListener('click', function(){
 socket.on('encryptor-div', function(data){
     genKey();
     var encrypted = encryptInput(data.message);
-    postEncryption.innerHTML += '<p>' + encrypted + '</p>';
+    postEncryption.innerHTML = '<p>' + encrypted + '</p>';
     cypherMessage.value = encrypted;
 });
 socket.on('decryptor-div', function(data){
-    postDecryption.innerHTML += '<p>' + decryptInput(data.cypherMessage) + '</p>';
+    postDecryption.innerHTML = '<p>' + decryptInput(data.cypherMessage) + '</p>';
 });
 
 
@@ -64,7 +64,8 @@ function genKey() {
     do {
         b = randLargePrime();
     } while (a === b);
-
+    console.log("Prime A: " + a)
+    console.log("Prime B: " + b)
 
     //multiply primes to get n, the public key
     var n = a * b;
@@ -95,12 +96,12 @@ function genKey() {
 }
 
 
-//generates a prime 1024 digits long.  Had to reduce the size of the prime so javascript wouldn't call it 'infinity.'
+//generates a prime 1024 bis long.  Had to reduce the size of the prime so the calculations would cause issues.
 function randLargePrime() {
     var guess = 0;
 
     do {
-        guess = Math.pow(10, 1) + Math.floor(Math.random() * 9 * Math.pow(10, 1));
+        guess = Math.pow(10, 2) + Math.floor(Math.random() * 9 * Math.pow(10, 2));
     } while (!primeTest(guess, 40)); //the '40' is how many times we want to run the miller-rabin test.
 
     return guess;
