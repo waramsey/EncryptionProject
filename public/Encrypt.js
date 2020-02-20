@@ -64,8 +64,6 @@ function genKey() {
     do {
         b = randLargePrime();
     } while (a === b);
-    console.log("Prime A: " + a)
-    console.log("Prime B: " + b)
 
     //multiply primes to get n, the public key
     var n = a * b;
@@ -173,3 +171,4 @@ function decryptInput(cypherText) {
 
     return decryptedText;
 }
+
